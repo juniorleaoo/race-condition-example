@@ -1,8 +1,10 @@
 package example.racecondition
 
 import jakarta.persistence.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -79,13 +81,6 @@ class AccountController(
         return ResponseEntity.ok(balance)
     }
 
-    @Transactional(readOnly = true)
-    @GetMapping()
-    fun getBalance(): ResponseEntity<Int> {
-        val balance = this.accountRepository.getBalance()
-        logger.info("getBalance Saldo $balance")
-        return ResponseEntity.ok(balance)
-    }
 }
 
 fun main(args: Array<String>) = runBlocking<Unit> {
@@ -95,35 +90,17 @@ fun main(args: Array<String>) = runBlocking<Unit> {
 
     val restTemplate = RestTemplate()
 
-    async {
-        restTemplate.getForEntity<Int>("http://localhost:8080/v1/accounts/1500")
-        restTemplate.getForEntity<Int>("http://localhost:8080/v1/accounts")
-    }
-
-    async {
-        restTemplate.getForEntity<Int>("http://localhost:8080/v1/accounts/1500")
-        restTemplate.getForEntity<Int>("http://localhost:8080/v1/accounts")
-    }
-
-    async {
-        restTemplate.getForEntity<Int>("http://localhost:8080/v1/accounts/1500")
-        restTemplate.getForEntity<Int>("http://localhost:8080/v1/accounts")
-    }
-
-    async {
-        restTemplate.getForEntity<Int>("http://localhost:8080/v1/accounts/1500")
-        restTemplate.getForEntity<Int>("http://localhost:8080/v1/accounts")
-    }
-
-    async {
-        restTemplate.getForEntity<Int>("http://localhost:8080/v1/accounts/1500")
-        restTemplate.getForEntity<Int>("http://localhost:8080/v1/accounts")
-    }
-
-    async {
-        restTemplate.getForEntity<Int>("http://localhost:8080/v1/accounts/1500")
-        restTemplate.getForEntity<Int>("http://localhost:8080/v1/accounts")
-    }
+    async { call(restTemplate) }
+    async { call(restTemplate) }
+    async { call(restTemplate) }
+    async { call(restTemplate) }
+    async { call(restTemplate) }
 
     logger.info("finalizou")
+}
+
+suspend fun call(restTemplate: RestTemplate) {
+    withContext(Dispatchers.IO) {
+        restTemplate.getForEntity<Int>("http://localhost:8080/v1/accounts/1500")
+    }
 }
